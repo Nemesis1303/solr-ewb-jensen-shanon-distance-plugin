@@ -11,7 +11,7 @@ import org.apache.lucene.util.BytesRef;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import smile.math.distance.JensenShannonDistance;
+//import smile.math.distance.JensenShannonDistance;
 
 /*
  * This class receives the query vector and computes its distance to the document vector by reading the vector values directly from the Lucene index. As distance metric, the Jensen-Shannon divergence is used.
@@ -78,8 +78,11 @@ public class VectorValuesSource extends DoubleValuesSource {
                     queryProbabilities[i] = vector.get(i);
                 }
 
-                JensenShannonDistance jsd = new JensenShannonDistance();
-                score = jsd.d(docProbabilities, queryProbabilities);
+                //JensenShannonDistance jsd = new JensenShannonDistance();
+                //score = jsd.d(docProbabilities, queryProbabilities);
+
+                Distance d = new Distance();
+                score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
 
                 return score;
             }

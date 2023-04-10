@@ -18,11 +18,11 @@
 
   <dependencies>
 
-    <dependency>
+    <!-- <dependency>
       <groupId>com.github.haifengl</groupId>
       <artifactId>smile-math</artifactId>
       <version>2.6.0</version>
-    </dependency>
+    </dependency> -->
 
     <dependency>
       <groupId>org.apache.lucene</groupId>
