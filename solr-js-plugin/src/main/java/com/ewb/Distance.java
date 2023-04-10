@@ -23,10 +23,11 @@ public class Distance {
             }
         }
 
-        if (intersection)
-            return k;
-        else
-            return Double.POSITIVE_INFINITY;
+        // if (intersection)
+        //     return k;
+        // else
+        //     return Double.POSITIVE_INFINITY;
+        return k;
     }
 
     /**
