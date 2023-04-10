@@ -59,9 +59,8 @@ public class VectorQuery extends Query {
     }
 
     @Override
-    public void visit(QueryVisitor arg0) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    public void visit(QueryVisitor visitor) {
+      visitor.visitLeaf(this);
     }
 
 }
