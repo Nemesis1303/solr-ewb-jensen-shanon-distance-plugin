@@ -59,8 +59,8 @@ public class DistanceTest {
     @Test
     public void testGetInteresction() {
         System.out.println("Starting test 4...");
-        String query_vector = "t0|10 t4|548 t5|6 t20|403";
-        String doc_vector = "t0|10 t3|548 t6|6 t21|403";
+        String query_vector = "t1|180 t2|35 t6|47 t11|565 t12|5 t14|168";
+        String doc_vector = "t0|43 t4|548 t5|6 t20|403";
 
         String[] query_comps = query_vector.split(" ");
 
@@ -102,6 +102,12 @@ public class DistanceTest {
 
         System.out.println(Arrays.toString(docProbabilities));
         System.out.println(Arrays.toString(queryProbabilities));
+
+        double score = 0;
+        Distance d = new Distance();
+        score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
+
+        System.out.println(score);
 
     }
 }
