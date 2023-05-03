@@ -117,7 +117,7 @@ public class VectorValuesSource extends DoubleValuesSource {
                 System.out.println(Arrays.toString(queryProbabilities));
 
                 Distance d = new Distance();
-                score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
+                score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
 
                 return score;
             }

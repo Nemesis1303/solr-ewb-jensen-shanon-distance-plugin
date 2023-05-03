@@ -33,10 +33,10 @@ public class Distance {
      */
     public double JensenShannonDivergence(double[] p, double[] q) {
 
-        if (p.length != q.length) {
-            throw new IllegalArgumentException(
-                    String.format("Arrays have different length: p[%d], q[%d]", p.length, q.length));
-        }
+        // if (p.length != q.length) {
+        //     throw new IllegalArgumentException(
+        //             String.format("Arrays have different length: p[%d], q[%d]", p.length, q.length));
+        // }
 
         double[] m = new double[p.length];
         for (int i = 0; i < m.length; i++) {
@@ -48,9 +48,9 @@ public class Distance {
 
 
     public double bhattacharyyaDistance(double[] p, double[] q) {
-        if (p.length != q.length) {
-            throw new IllegalArgumentException("Distributions must have the same length");
-        }
+        // if (p.length != q.length) {
+        //     throw new IllegalArgumentException("Distributions must have the same length");
+        // }
     
         double sum = 0.0;
         for (int i = 0; i < p.length; i++) {
