@@ -46,4 +46,19 @@ public class Distance {
         return (KullbackLeiblerDivergence(p, m) + KullbackLeiblerDivergence(q, m)) / 2;
     }
 
+
+    public double bhattacharyyaDistance(double[] p, double[] q) {
+        if (p.length != q.length) {
+            throw new IllegalArgumentException("Distributions must have the same length");
+        }
+    
+        double sum = 0.0;
+        for (int i = 0; i < p.length; i++) {
+            sum += Math.sqrt(p[i] * q[i]);
+        }
+    
+        return -Math.log(sum);
+    }
+    
+
 }

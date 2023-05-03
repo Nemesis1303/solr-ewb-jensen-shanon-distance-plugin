@@ -10,32 +10,39 @@ import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 //import smile.math.distance.JensenShannonDistance;
+import java.util.Map;
 
 /*
  * This class receives the query vector and computes its distance to the document vector by reading the vector values directly from the Lucene index. As distance metric, the Jensen-Shannon divergence is used.
  */
 public class VectorValuesSource extends DoubleValuesSource {
     private final String field;
-    private List<Double> vector;
+    // private List<Double> vector;
 
     private Terms terms; // Access to the terms in a specific field
     private TermsEnum te; // Iterator to step through terms to obtain frequency information
+    private String[] query_comps;
 
     public VectorValuesSource(String field, String strVector) {
         this.field = field;
-        this.vector = new ArrayList<>();
+        this.query_comps = strVector.split(" ");
 
         // query is assumed to be given as:
         // http://localhost:8983/solr/{your-collection-name}/query?fl=name,score,vector&q={!vp
         // f=vector vector="0.1,4.75,0.3,1.2,0.7,4.0"}
 
-        String[] vectorArray = strVector.split(",");
-        for (String s : vectorArray) {
-            double v = Double.parseDouble(s);
-            vector.add(v);
-        }
+        // new approach: vector="t0|43 t4|548 t5|6 t20|403";
+
+        // String[] vectorArray = strVector.split(",");
+        // for (String s : vectorArray) {
+        // double v = Double.parseDouble(s);
+        // vector.add(v);
+        // }
     }
 
     public DoubleValues getValues(LeafReaderContext leafReaderContext, DoubleValues doubleValues) throws IOException {
@@ -48,8 +55,6 @@ public class VectorValuesSource extends DoubleValuesSource {
             // core based on vector lookup
             public double doubleValue() throws IOException {
                 double score = 0;
-                double[] docProbabilities = new double[vector.size()];
-                double[] queryProbabilities = new double[vector.size()];
                 BytesRef text;
                 String term = "";
 
@@ -60,9 +65,14 @@ public class VectorValuesSource extends DoubleValuesSource {
                     }
                 }
 
-                // Calculate the document probability distribution
+                // Get the document probability distribution
+                List<Integer> doc_topics = new ArrayList<Integer>();
+                List<Integer> doc_probs = new ArrayList<Integer>();
                 float payloadValue = 0f;
                 PostingsEnum postings = te.postings(null, PostingsEnum.ALL);
+                // And after we get TermsEnum instance te, we can compute the document vector by
+                // iterating all payload components (we will have as many components as topics
+                // the model has)
                 while (postings.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
                     int freq = postings.freq();
                     while (freq-- > 0)
@@ -70,16 +80,46 @@ public class VectorValuesSource extends DoubleValuesSource {
 
                     BytesRef payload = postings.getPayload();
                     payloadValue = PayloadHelper.decodeInt(payload.bytes, payload.offset);
-                    docProbabilities[Integer.parseInt(term.substring(1))] += payloadValue;
+                    doc_topics.add(Integer.parseInt(term.substring(1)));
+                    doc_probs.add((int) payloadValue);
+                    // docProbabilities[
+                    // Integer.parseInt(term.substring(1))] += payloadValue;
                 }
 
-                // Calculate the query probability distribution
-                for (int i = 0; i < vector.size(); i++) {
-                    queryProbabilities[i] = vector.get(i);
+                // Create maps containing the value after '|' for each t that is present in both
+                // strings
+                Map<Integer, Integer> doc_values = new HashMap<>();
+                Map<Integer, Integer> query_values = new HashMap<>();
+
+                for (String comp : query_comps) {
+                    int tpc_id = Integer.parseInt(comp.split("\\|")[0].split("t")[1]);
+                    if (doc_topics.contains(tpc_id)) {
+                        query_values.put(tpc_id, Integer.parseInt(comp.split("\\|")[1]));
+                    } else {
+                        doc_topics.remove(tpc_id - 1);
+                        doc_probs.remove(tpc_id - 1);
+                    }
                 }
 
-                //JensenShannonDistance jsd = new JensenShannonDistance();
-                //score = jsd.d(docProbabilities, queryProbabilities);
+                for (int i = 0; i < doc_topics.size(); i++) {
+                    doc_values.put(doc_topics.get(i), doc_probs.get(i));
+                }
+
+                // Convert the maps into arrays
+                List<Integer> sortedKeys = new ArrayList<>(doc_values.keySet());
+                Collections.sort(sortedKeys);
+
+                double[] docProbabilities = new double[sortedKeys.size()];
+                double[] queryProbabilities = new double[sortedKeys.size()];
+
+                for (int i = 0; i < sortedKeys.size(); i++) {
+                    Integer t = sortedKeys.get(i);
+                    docProbabilities[i] = doc_values.get(t);
+                    queryProbabilities[i] = query_values.get(t);
+                }
+
+                System.out.println(Arrays.toString(docProbabilities));
+                System.out.println(Arrays.toString(queryProbabilities));
 
                 Distance d = new Distance();
                 score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
