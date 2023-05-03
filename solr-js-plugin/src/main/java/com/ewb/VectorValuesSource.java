@@ -96,8 +96,8 @@ public class VectorValuesSource extends DoubleValuesSource {
                     if (doc_topics.contains(tpc_id)) {
                         query_values.put(tpc_id, Integer.parseInt(comp.split("\\|")[1]));
                     } else {
-                        doc_topics.remove(tpc_id - 1);
-                        doc_probs.remove(tpc_id - 1);
+                        doc_topics.remove(tpc_id);
+                        doc_probs.remove(tpc_id);
                     }
                 }
 
