@@ -93,16 +93,11 @@ public class VectorValuesSource extends DoubleValuesSource {
 
                 for (String comp : query_comps) {
                     int tpc_id = Integer.parseInt(comp.split("\\|")[0].split("t")[1]);
+                    System.out.println("tpc_id: " + tpc_id);
                     if (doc_topics.contains(tpc_id)) {
                         query_values.put(tpc_id, Integer.parseInt(comp.split("\\|")[1]));
-                    } else {
-                        doc_topics.remove(tpc_id);
-                        doc_probs.remove(tpc_id);
+                        doc_values.put(tpc_id, doc_probs.get(doc_topics.indexOf(tpc_id)));
                     }
-                }
-
-                for (int i = 0; i < doc_topics.size(); i++) {
-                    doc_values.put(doc_topics.get(i), doc_probs.get(i));
                 }
 
                 // Convert the maps into arrays
