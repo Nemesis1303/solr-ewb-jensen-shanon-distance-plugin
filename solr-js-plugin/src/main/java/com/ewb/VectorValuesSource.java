@@ -126,7 +126,7 @@ public class VectorValuesSource extends DoubleValuesSource {
                 //     score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
                 // }
                 
-                score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
+                score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
 
                 return score;
             }
