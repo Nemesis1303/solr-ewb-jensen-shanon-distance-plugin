@@ -59,7 +59,7 @@ public class DistanceTest {
     @Test
     public void testGetInteresction() {
         System.out.println("Starting test 4...");
-        String query_vector = "t1|180 t2|35 t6|47 t11|565 t12|5 t14|168";
+        String query_vector = "t0|38 t1|840 t6|122";
         String doc_vector = "t0|43 t4|548 t5|6 t20|403";
 
         String[] query_comps = query_vector.split(" ");
@@ -106,6 +106,10 @@ public class DistanceTest {
         double score = 0;
         Distance d = new Distance();
         score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
+
+        System.out.println(score);
+
+        score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
 
         System.out.println(score);
 

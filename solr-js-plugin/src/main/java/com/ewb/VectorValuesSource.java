@@ -22,16 +22,14 @@ import java.util.Map;
  */
 public class VectorValuesSource extends DoubleValuesSource {
     private final String field;
-    private final String metric;
     // private List<Double> vector;
 
     private Terms terms; // Access to the terms in a specific field
     private TermsEnum te; // Iterator to step through terms to obtain frequency information
     private String[] query_comps;
 
-    public VectorValuesSource(String field, String strVector, String metric) {
+    public VectorValuesSource(String field, String strVector) {
         this.field = field;
-        this.metric = metric;
         this.query_comps = strVector.split(" ");
 
         // query is assumed to be given as:
@@ -120,11 +118,15 @@ public class VectorValuesSource extends DoubleValuesSource {
 
                 Distance d = new Distance();
 
-                if (metric == "jensen-shannon") {
-                    score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
-                } else if (metric == "bhattacharyya") {
-                    score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
-                }
+                
+                // if (metric == "jensen-shannon") {
+                //     score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
+                // }
+                // else if (metric == "bhattacharyya") {
+                //     score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
+                // }
+                
+                score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
 
                 return score;
             }
