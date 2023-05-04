@@ -60,7 +60,7 @@ public class DistanceTest {
     public void testGetInteresction() {
         System.out.println("Starting test 4...");
         String query_vector = "t0|38 t1|840 t6|122";
-        String doc_vector = "t0|43 t4|548 t5|6 t20|403";
+        String doc_vector = "t0|1000 t1|122";
 
         String[] query_comps = query_vector.split(" ");
 
