@@ -85,12 +85,6 @@ public class VectorValuesSource extends DoubleValuesSource {
                         // Integer.parseInt(term.substring(1))] += payloadValue;
                     }
                 }
-                String rpr1 = StringUtils.join(doc_topics, "|") + ";" + StringUtils.join(doc_probs, "|");
-                Integer aux;
-                aux = 0;
-                if (aux == 0) {
-                    throw new IllegalArgumentException(rpr1);
-                }
 
                 // Create maps containing the value after '|' for each t that is present in both
                 // strings
@@ -132,11 +126,6 @@ public class VectorValuesSource extends DoubleValuesSource {
                 // }
 
                 score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
-
-                String rpr = "";
-                for (int i = 0; i < doc_topics.size(); i++) {
-                    rpr += doc_topics.get(i).toString() + "|" + doc_probs.get(i).toString() + " ";
-                }
 
                 return score;
 
