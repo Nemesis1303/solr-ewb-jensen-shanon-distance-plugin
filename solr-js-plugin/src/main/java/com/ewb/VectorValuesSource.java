@@ -1,6 +1,5 @@
 package com.ewb;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.DocIdSetIterator;
@@ -15,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-//import smile.math.distance.JensenShannonDistance;
 import java.util.Map;
 
 /*
@@ -23,27 +21,19 @@ import java.util.Map;
  */
 public class VectorValuesSource extends DoubleValuesSource {
     private final String field;
-    // private List<Double> vector;
+    private final String metric;
 
     private Terms terms; // Access to the terms in a specific field
     private TermsEnum te; // Iterator to step through terms to obtain frequency information
     private String[] query_comps;
 
-    public VectorValuesSource(String field, String strVector) {
-        this.field = field;
-        this.query_comps = strVector.split(" ");
-
+    public VectorValuesSource(String field, String strVector, String metric) {
         // query is assumed to be given as:
         // http://localhost:8983/solr/{your-collection-name}/query?fl=name,score,vector&q={!vp
-        // f=vector vector="0.1,4.75,0.3,1.2,0.7,4.0"}
-
-        // new approach: vector="t0|43 t4|548 t5|6 t20|403";
-
-        // String[] vectorArray = strVector.split(",");
-        // for (String s : vectorArray) {
-        // double v = Double.parseDouble(s);
-        // vector.add(v);
-        // }
+        // f=vector vector="t0|43 t4|548 t5|6 t20|403"}
+        this.field = field;
+        this.query_comps = strVector.split(" ");
+        this.metric = metric;
     }
 
     public DoubleValues getValues(LeafReaderContext leafReaderContext, DoubleValues doubleValues) throws IOException {
@@ -81,8 +71,6 @@ public class VectorValuesSource extends DoubleValuesSource {
                         payloadValue = PayloadHelper.decodeInt(payload.bytes, payload.offset);
                         doc_topics.add(Integer.parseInt(term.substring(1)));
                         doc_probs.add((int) payloadValue);
-                        // docProbabilities[
-                        // Integer.parseInt(term.substring(1))] += payloadValue;
                     }
                 }
 
@@ -118,12 +106,12 @@ public class VectorValuesSource extends DoubleValuesSource {
 
                 Distance d = new Distance();
 
-                // if (metric == "jensen-shannon") {
-                // score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
-                // }
-                // else if (metric == "bhattacharyya") {
-                // score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
-                // }
+                if (metric == "jensen-shannon") {
+                    score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
+                }
+                else if (metric == "bhattacharyya") {
+                    score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
+                }
 
                 score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
 
