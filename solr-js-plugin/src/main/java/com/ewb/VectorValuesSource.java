@@ -118,31 +118,29 @@ public class VectorValuesSource extends DoubleValuesSource {
 
                 Distance d = new Distance();
 
-                
                 // if (metric == "jensen-shannon") {
-                //     score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
+                // score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
                 // }
                 // else if (metric == "bhattacharyya") {
-                //     score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
+                // score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
                 // }
-                
+
                 score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
-                
-                
+
                 String rpr = "";
                 for (int i = 0; i < doc_topics.size(); i++) {
-                    rpr +=  doc_topics.get(i).toString() + "|"  + doc_probs.get(i).toString() + " ";
+                    rpr += doc_topics.get(i).toString() + "|" + doc_probs.get(i).toString() + " ";
                 }
 
-                try {
-                    throw new Exception("Some required parts are missing: " + rpr);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                Integer aux;
+                aux = 0;
+                if (aux == 0) {
+                    throw new IllegalArgumentException(rpr);
                 }
 
                 return score;
 
-                //return score;
+                // return score;
             }
 
             // Advance to next document (for each document in the LeafReaderContext)
