@@ -21,19 +21,19 @@ import java.util.Map;
  */
 public class VectorValuesSource extends DoubleValuesSource {
     private final String field;
-    private final String metric;
+    //private final String metric;
 
     private Terms terms; // Access to the terms in a specific field
     private TermsEnum te; // Iterator to step through terms to obtain frequency information
     private String[] query_comps;
 
-    public VectorValuesSource(String field, String strVector, String metric) {
+    public VectorValuesSource(String field, String strVector) {
         // query is assumed to be given as:
         // http://localhost:8983/solr/{your-collection-name}/query?fl=name,score,vector&q={!vp
         // f=vector vector="t0|43 t4|548 t5|6 t20|403"}
         this.field = field;
         this.query_comps = strVector.split(" ");
-        this.metric = metric;
+        //this.metric = metric;
     }
 
     public DoubleValues getValues(LeafReaderContext leafReaderContext, DoubleValues doubleValues) throws IOException {
@@ -106,13 +106,15 @@ public class VectorValuesSource extends DoubleValuesSource {
 
                 Distance d = new Distance();
 
-                if (metric == "jensen-shannon") {
-                    score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
-                }
-                else if (metric == "bhattacharyya") {
-                    score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
-                }
-
+                // if (metric == "jensen-shannon") {
+                //     score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
+                // }
+                // else if (metric == "bhattacharyya") {
+                //     score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
+                // }
+                
+                score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
+                
                 return score;
 
                 // return score;

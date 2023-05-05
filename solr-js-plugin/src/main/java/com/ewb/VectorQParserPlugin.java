@@ -21,7 +21,7 @@ public class VectorQParserPlugin extends QParserPlugin {
             public Query parse() throws SyntaxError {
                 String field = localParams.get(QueryParsing.F);
                 String vector = localParams.get("vector");
-                String metric = localParams.get("metric");
+                //String metric = localParams.get("metric");
 
                 if (field == null) {
                     throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "'f' no specified");
@@ -31,9 +31,9 @@ public class VectorQParserPlugin extends QParserPlugin {
                     throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "vector mussing");
                 }
 
-                if (metric == null) {
-                    throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "metric mussing");
-                }
+                // if (metric == null) {
+                //     throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "metric mussing");
+                // }
 
                 Query subQuery = subQuery(localParams.get(QueryParsing.V), null).getQuery();
 
@@ -48,7 +48,7 @@ public class VectorQParserPlugin extends QParserPlugin {
                     throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Query is null");
                 }
 
-                return new FunctionScoreQuery(query, new VectorValuesSource(field, vector, metric));
+                return new FunctionScoreQuery(query, new VectorValuesSource(field, vector));
             }
         };
     }
