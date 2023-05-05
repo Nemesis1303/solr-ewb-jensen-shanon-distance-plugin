@@ -58,35 +58,33 @@ public class VectorValuesSource extends DoubleValuesSource {
                 double score = 0;
                 BytesRef text;
                 String term = "";
-
+                List<Integer> doc_topics = new ArrayList<Integer>();
+                List<Integer> doc_probs = new ArrayList<Integer>();
                 while ((text = te.next()) != null) {
                     term = text.utf8ToString();
                     if (term.isEmpty()) {
                         continue;
                     }
-                }
 
-                // Get the document probability distribution
-                List<Integer> doc_topics = new ArrayList<Integer>();
-                List<Integer> doc_probs = new ArrayList<Integer>();
-                float payloadValue = 0f;
-                PostingsEnum postings = te.postings(null, PostingsEnum.ALL);
-                // And after we get TermsEnum instance te, we can compute the document vector by
-                // iterating all payload components (we will have as many components as topics
-                // the model has)
-                while (postings.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
-                    int freq = postings.freq();
-                    while (freq-- > 0)
-                        postings.nextPosition();
+                    // Get the document probability distribution
+                    float payloadValue = 0f;
+                    PostingsEnum postings = te.postings(null, PostingsEnum.ALL);
+                    // And after we get TermsEnum instance te, we can compute the document vector by
+                    // iterating all payload components (we will have as many components as topics
+                    // the model has)
+                    while (postings.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
+                        int freq = postings.freq();
+                        while (freq-- > 0)
+                            postings.nextPosition();
 
-                    BytesRef payload = postings.getPayload();
-                    payloadValue = PayloadHelper.decodeInt(payload.bytes, payload.offset);
-                    doc_topics.add(Integer.parseInt(term.substring(1)));
-                    doc_probs.add((int) payloadValue);
-                    // docProbabilities[
-                    // Integer.parseInt(term.substring(1))] += payloadValue;
+                        BytesRef payload = postings.getPayload();
+                        payloadValue = PayloadHelper.decodeInt(payload.bytes, payload.offset);
+                        doc_topics.add(Integer.parseInt(term.substring(1)));
+                        doc_probs.add((int) payloadValue);
+                        // docProbabilities[
+                        // Integer.parseInt(term.substring(1))] += payloadValue;
+                    }
                 }
-                
                 String rpr1 = StringUtils.join(doc_topics, "|") + ";" + StringUtils.join(doc_probs, "|");
                 Integer aux;
                 aux = 0;
