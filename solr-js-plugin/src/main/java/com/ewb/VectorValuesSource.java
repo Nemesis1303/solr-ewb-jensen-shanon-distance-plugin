@@ -1,5 +1,6 @@
 package com.ewb;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.DocIdSetIterator;
@@ -85,6 +86,13 @@ public class VectorValuesSource extends DoubleValuesSource {
                     // docProbabilities[
                     // Integer.parseInt(term.substring(1))] += payloadValue;
                 }
+                
+                String rpr1 = StringUtils.join(doc_topics, "|") + ";" + StringUtils.join(doc_probs, "|");
+                Integer aux;
+                aux = 0;
+                if (aux == 0) {
+                    throw new IllegalArgumentException(rpr1);
+                }
 
                 // Create maps containing the value after '|' for each t that is present in both
                 // strings
@@ -130,12 +138,6 @@ public class VectorValuesSource extends DoubleValuesSource {
                 String rpr = "";
                 for (int i = 0; i < doc_topics.size(); i++) {
                     rpr += doc_topics.get(i).toString() + "|" + doc_probs.get(i).toString() + " ";
-                }
-
-                Integer aux;
-                aux = 0;
-                if (aux == 0) {
-                    throw new IllegalArgumentException(rpr);
                 }
 
                 return score;
