@@ -107,11 +107,10 @@ public class DistanceTest {
         Distance d = new Distance();
         score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
 
-        System.out.println(score);
+        System.out.println("bhattacharyya: " + score);
 
         score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
 
-        System.out.println(score);
-
+        System.out.println("jensen: " + score);
     }
 }
