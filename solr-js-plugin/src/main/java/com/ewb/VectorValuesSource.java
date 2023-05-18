@@ -80,8 +80,14 @@ public class VectorValuesSource extends DoubleValuesSource {
                 Map<Integer, Integer> query_values = new HashMap<>();
 
                 for (String comp : query_comps) {
-                    int tpc_id = Integer.parseInt(comp.split("\\|")[0].split("t")[1]);
-                    System.out.println("tpc_id: " + tpc_id);
+                    int tpc_id = -1 ;
+                    // It is a document-topic distribution
+                    if(comp.contains("t")){
+                        tpc_id = Integer.parseInt(comp.split("\\|")[0].split("t")[1]);
+                    // It is a word-topic distribution
+                    } else if(comp.contains("w")){
+                        tpc_id = Integer.parseInt(comp.split("\\|")[0].split("w")[1]);
+                    }                    
                     if (doc_topics.contains(tpc_id)) {
                         query_values.put(tpc_id, Integer.parseInt(comp.split("\\|")[1]));
                         doc_values.put(tpc_id, doc_probs.get(doc_topics.indexOf(tpc_id)));
