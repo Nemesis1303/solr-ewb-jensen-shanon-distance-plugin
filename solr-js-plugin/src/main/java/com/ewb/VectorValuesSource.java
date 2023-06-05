@@ -15,25 +15,31 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.*;
 
 /*
  * This class receives the query vector and computes its distance to the document vector by reading the vector values directly from the Lucene index. As distance metric, the Jensen-Shannon divergence is used.
  */
 public class VectorValuesSource extends DoubleValuesSource {
     private final String field;
-    //private final String metric;
+    // private final String metric;
 
     private Terms terms; // Access to the terms in a specific field
     private TermsEnum te; // Iterator to step through terms to obtain frequency information
     private String[] query_comps;
 
     public VectorValuesSource(String field, String strVector) {
-        // query is assumed to be given as:
-        // http://localhost:8983/solr/{your-collection-name}/query?fl=name,score,vector&q={!vp
-        // f=vector vector="t0|43 t4|548 t5|6 t20|403"}
+        /*
+         * Document queries are assumed to be given as:
+         * http://localhost:8983/solr/{your-corpus-collection-name}/query?fl=name,score,
+         * vector&q={!vp f=doctpc_{your-model-name} vector="t0|43 t4|548 t5|6 t20|403"}
+         * while topic queries as follows:
+         * http://localhost:8983/solr/{your-model-collection-name}/query?fl=name,score,
+         * vector&q={!vp f=betas
+         * vector="high|43 research|548 development|6 neural_networks|403"}
+         */
         this.field = field;
         this.query_comps = strVector.split(" ");
-        //this.metric = metric;
     }
 
     public DoubleValues getValues(LeafReaderContext leafReaderContext, DoubleValues doubleValues) throws IOException {
@@ -75,19 +81,35 @@ public class VectorValuesSource extends DoubleValuesSource {
                 }
 
                 // Create maps containing the value after '|' for each t that is present in both
-                // strings
+                // strings for the case of document queries, and for each word that is present
+                // in both strings for the case of topic queries
                 Map<Integer, Integer> doc_values = new HashMap<>();
                 Map<Integer, Integer> query_values = new HashMap<>();
 
+                // Create pattern to match the topic queries
+                Pattern pattern = Pattern.compile("t(\\d+)\\|");
+
                 for (String comp : query_comps) {
-                    int tpc_id = -1 ;
+                    Matcher matcher = pattern.matcher(comp);
+                    if (matcher.find()) {
+                        int tpc_id = Integer.parseInt(matcher.group(1));
+                        System.out.println(tpc_id);
+                    }
+                }
+
+                for (String comp : query_comps) {
+                    int tpc_id = -1;
                     // It is a document-topic distribution
-                    if(comp.contains("t")){
+                    if (comp.contains("t")) {
                         tpc_id = Integer.parseInt(comp.split("\\|")[0].split("t")[1]);
-                    // It is a word-topic distribution
-                    } else if(comp.contains("w")){
-                        tpc_id = Integer.parseInt(comp.split("\\|")[0].split("w")[1]);
-                    }                    
+                        // It is a word-topic distribution
+                    } else {
+                        Matcher matcher = pattern.matcher(comp);
+                        if (matcher.find()) {
+                            tpc_id = Integer.parseInt(matcher.group(1));
+                        }
+
+                    }
                     if (doc_topics.contains(tpc_id)) {
                         query_values.put(tpc_id, Integer.parseInt(comp.split("\\|")[1]));
                         doc_values.put(tpc_id, doc_probs.get(doc_topics.indexOf(tpc_id)));
@@ -113,14 +135,14 @@ public class VectorValuesSource extends DoubleValuesSource {
                 Distance d = new Distance();
 
                 // if (metric == "jensen-shannon") {
-                //     score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
+                // score = d.JensenShannonDivergence(docProbabilities, queryProbabilities);
                 // }
                 // else if (metric == "bhattacharyya") {
-                //     score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
+                // score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
                 // }
-                
+
                 score = d.bhattacharyyaDistance(docProbabilities, queryProbabilities);
-                
+
                 return score;
 
                 // return score;
