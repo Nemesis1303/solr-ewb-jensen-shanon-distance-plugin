@@ -54,7 +54,7 @@ public class VectorValuesSource extends DoubleValuesSource {
                 double score = 0;
                 BytesRef text;
                 String term = "";
-                List<Integer> doc_topics = new ArrayList<Integer>();
+                List<String> doc_topics = new ArrayList<String>();
                 List<Integer> doc_probs = new ArrayList<Integer>();
                 while ((text = te.next()) != null) {
                     term = text.utf8ToString();
@@ -75,56 +75,48 @@ public class VectorValuesSource extends DoubleValuesSource {
 
                         BytesRef payload = postings.getPayload();
                         payloadValue = PayloadHelper.decodeInt(payload.bytes, payload.offset);
-                        doc_topics.add(Integer.parseInt(term.substring(1)));
+                        doc_topics.add(term);
+                        //doc_topics.add(Integer.parseInt(term.substring(1)));
                         doc_probs.add((int) payloadValue);
                     }
                 }
 
-                // Create maps containing the value after '|' for each t that is present in both
-                // strings for the case of document queries, and for each word that is present
-                // in both strings for the case of topic queries
-                Map<Integer, Integer> doc_values = new HashMap<>();
-                Map<Integer, Integer> query_values = new HashMap<>();
+                // Create maps containing the value after '|' for each t that is present in both strings for the case of document queries, and for each word that is present in both strings for the case of topic queries
+                Map<String, Integer> doc_values = new HashMap<>();
+                Map<String, Integer> query_values = new HashMap<>();
 
-                // Create pattern to match the topic queries
-                Pattern pattern = Pattern.compile("t(\\d+)\\|");
+                // Create pattern to match the document and topic queries
+                Pattern pattern_docs = Pattern.compile("t(\\d+)\\|");
+                Pattern pattern_words = Pattern.compile("([^|]+)\\|(\\d+)");
 
                 for (String comp : query_comps) {
-                    Matcher matcher = pattern.matcher(comp);
+                    String key = "";
+                    Matcher matcher;
+
+                    matcher = pattern_docs.matcher(comp);
                     if (matcher.find()) {
-                        int tpc_id = Integer.parseInt(matcher.group(1));
-                        System.out.println(tpc_id);
-                    }
-                }
-
-                for (String comp : query_comps) {
-                    int tpc_id = -1;
-                    // It is a document-topic distribution
-                    if (comp.contains("t")) {
-                        tpc_id = Integer.parseInt(comp.split("\\|")[0].split("t")[1]);
-                        // It is a word-topic distribution
+                        key = matcher.group(1);
                     } else {
-                        Matcher matcher = pattern.matcher(comp);
+                        matcher = pattern_words.matcher(comp);
                         if (matcher.find()) {
-                            tpc_id = Integer.parseInt(matcher.group(1));
+                            key = matcher.group(1);
                         }
-
                     }
-                    if (doc_topics.contains(tpc_id)) {
-                        query_values.put(tpc_id, Integer.parseInt(comp.split("\\|")[1]));
-                        doc_values.put(tpc_id, doc_probs.get(doc_topics.indexOf(tpc_id)));
+                    
+                    if (doc_topics.contains(key)) {
+                        query_values.put(key, Integer.parseInt(comp.split("\\|")[1]));
+                        doc_values.put(key, doc_probs.get(doc_topics.indexOf(key)));
                     }
                 }
 
                 // Convert the maps into arrays
-                List<Integer> sortedKeys = new ArrayList<>(doc_values.keySet());
-                Collections.sort(sortedKeys);
+                List<String> keys = new ArrayList<>(doc_values.keySet());
 
-                double[] docProbabilities = new double[sortedKeys.size()];
-                double[] queryProbabilities = new double[sortedKeys.size()];
+                double[] docProbabilities = new double[keys.size()];
+                double[] queryProbabilities = new double[keys.size()];
 
-                for (int i = 0; i < sortedKeys.size(); i++) {
-                    Integer t = sortedKeys.get(i);
+                for (int i = 0; i < keys.size(); i++) {
+                    String t = keys.get(i);
                     docProbabilities[i] = doc_values.get(t);
                     queryProbabilities[i] = query_values.get(t);
                 }
