@@ -76,17 +76,19 @@ public class VectorValuesSource extends DoubleValuesSource {
                         BytesRef payload = postings.getPayload();
                         payloadValue = PayloadHelper.decodeInt(payload.bytes, payload.offset);
                         doc_topics.add(term);
-                        //doc_topics.add(Integer.parseInt(term.substring(1)));
+                        // doc_topics.add(Integer.parseInt(term.substring(1)));
                         doc_probs.add((int) payloadValue);
                     }
                 }
 
-                // Create maps containing the value after '|' for each t that is present in both strings for the case of document queries, and for each word that is present in both strings for the case of topic queries
+                // Create maps containing the value after '|' for each t that is present in both
+                // strings for the case of document queries, and for each word that is present
+                // in both strings for the case of topic queries
                 Map<String, Integer> doc_values = new HashMap<>();
                 Map<String, Integer> query_values = new HashMap<>();
 
                 // Create pattern to match the document and topic queries
-                Pattern pattern_docs = Pattern.compile("t(\\d+)\\|");
+                Pattern pattern_docs = Pattern.compile("(t\\d+)\\|");
                 Pattern pattern_words = Pattern.compile("([^|]+)\\|(\\d+)");
 
                 for (String comp : query_comps) {
@@ -102,7 +104,7 @@ public class VectorValuesSource extends DoubleValuesSource {
                             key = matcher.group(1);
                         }
                     }
-                    
+
                     if (doc_topics.contains(key)) {
                         query_values.put(key, Integer.parseInt(comp.split("\\|")[1]));
                         doc_values.put(key, doc_probs.get(doc_topics.indexOf(key)));
